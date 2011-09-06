@@ -7,12 +7,12 @@ long is always negative
 {
 	"coordinates":[
 		{
-			"lat":1.5,
-			"long":-4.3
+			"latitude":1.5,
+			"longitude":-4.3
 		},
 		{
-			"lat":41.1854,
-			"long:-73.2654
+			"latitude":41.1854,
+			"longitude":-73.2654
 		}
 	]
 }
