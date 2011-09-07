@@ -9,124 +9,133 @@
 	<link rel="stylesheet" href="style.css">
 </head>
 
-<body onload="initialize()">
+<body>
+	
   <div id="map_canvas"></div>
 
 	<aside>
 		<h1 id="logo">Wufoo Worldview</h1>
-		
 		<p>This map shows the locations of users who are submitting Wufoo forms in near-real time.</p>
 	</aside>
 	
-<script src="http://maps.googleapis.com/maps/api/js?sensor=true"></script>
-<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.6.2/jquery.min.js"></script>
+	<script src="http://maps.googleapis.com/maps/api/js?sensor=true"></script>
+	<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.6.2/jquery.min.js"></script>
 
-<script>
+	<script>
 
-	var markers = new Array();
-	var coordinates = new Array();
-	var map;
-	var callBackInterval = 60;
-	var showInterval = 1;
-	var numberOfCordinatesShowAtOneTime = 1;
+		var markers = new Array();
+		var coordinates = new Array();
+		var map;
+		var callBackInterval = 60;
+		var showInterval = 1;
+		var numberOfCordinatesShowAtOneTime = 1;
 	
-	function initialize() {
 		setUpMap();
-		
 		getCoordinates();
-		
+	
 		setInterval("setUpMarkers()", 1000);
 		setInterval("clearMarkers()", clearMarkersTime * 1000);
-	}
+
+		// timing related
+		// seconds that have passed in this interval
+		// alextodo, will have to reset the ticks after a call back
+		var ticks = 0;
+		
+		// the time markers should be shown
+		// alextodo clear the nextShowInterval time on call back from server
+		var nextShowInterval = 0;
+		var clearMarkersTime = 180;
 	
-	// timing related
-	// seconds that have passed in this interval
-	// alextodo, will have to reset the ticks after a call back
-	var ticks = 0;
-	// the time markers should be shown
-	// alextodo clear the nextShowInterval time on call back from server
-	var nextShowInterval = 0;
-	var clearMarkersTime = 180;
+		function setUpMarkers() {
+			
+			if ( (ticks == 0 || ticks == nextShowInterval) && coordinates.length > 0 ) {
+				
+				for (var i = 0; i < numberOfCordinatesShowAtOneTime; i++) {
+					
+					var coordinate = coordinates.pop();
+					var image = "Bleep.gif?random=" + coordinate.lat() + coordinate.lng();
+				
+					// Only calling this once? 
+					// console.log("Setting a marker");
+				
+					var marker = new google.maps.Marker({
+						position: coordinate,
+						icon: image,
+						optimized: false,
+						map: map
+					});
+				
+					marker.ticks = ticks;
+				
+					markers.push(marker);
+				};
+			
+				nextShowInterval += showInterval;
+			}
+		
+			ticks++;
+			
+		}
 	
-	function setUpMarkers() {
-		if((ticks == 0 || ticks == nextShowInterval) && coordinates.length > 0) {
-			for (var i = 0; i < numberOfCordinatesShowAtOneTime; i++) {
-				var coordinate = coordinates.pop();
-				var image = "Bleep.gif?random=" + coordinate.lat() + coordinate.lng();
-				
-				var marker = new google.maps.Marker({
-					position: coordinate,
-					icon: image,
-					// Required for animation
-					optimized: false,
-					map: map
-				});
-				
-				marker.ticks = ticks;
-				
-				markers.push(marker);
+		function setUpMap() {
+			
+			var centerOfTheWorld = new google.maps.LatLng(40.97989806962013, -31.640625);
+		
+			var options = {
+				zoom: 2,
+				scrollwheel: false,
+				disableDoubleClickZoom: true,
+				zoomControl: false,
+				center: centerOfTheWorld,
+				mapTypeId: google.maps.MapTypeId.ROADMAP
 			};
+	
+			map = new google.maps.Map(document.getElementById("map_canvas"), options);
 			
-			nextShowInterval += showInterval;
 		}
-		
-		ticks += 1;
-	}
 	
-	function setUpMap() {
-		/* Center of world */
-		var centerOfTheWorld = new google.maps.LatLng(40.97989806962013, -31.640625);
-		
-		var options = {
-			zoom: 2,
-			/* Scroll but not zoom */
-			scrollwheel: false,
-			disableDoubleClickZoom: true,
-			zoomControl: false,
-			center: centerOfTheWorld,
-			mapTypeId: google.maps.MapTypeId.ROADMAP
-		};
-	
-		map = new google.maps.Map(document.getElementById("map_canvas"), options);
-	}
-	
-	function getCoordinates() {
-		$.getJSON('dummydata.json', function(data) {
+		function getCoordinates() {
+			
+			/* This isn't working for http://css-tricks.com/wufoo/dummydata.json GAYYYY */
+			$.getJSON('dummydata.json', function(data) {
 						
-			for(var index in data.coordinates) {
-				var coordinate = data.coordinates[index];
+				for ( var index in data.coordinates ) {
+					var coordinate = data.coordinates[index];
+					coordinates.push(new google.maps.LatLng(coordinate.latitude, coordinate.longitude));
+				}
 				
-				coordinates.push(new google.maps.LatLng(coordinate.latitude, coordinate.longitude));
+				calculateIntervals();
+				
+			});
+			
+		}
+	
+		function calculateIntervals() {
+			
+			if ( coordinates.length > callBackInterval ) {
+				showInterval = 1;
+				numberOfCordinatesShowAtOneTime = Math.ceil(coordinates.length / callBackInterval);
+			} else {
+				numberOfCordinatesShowAtOneTime = 1;
+				coordinatesLength = (coordinates.length > 0) ? coordinates.length : 1;
+				showInterval = Math.floor(coordinatesLength);
+			}
+		}
+
+		function clearMarkers() {
+			
+			var length = markers.length;
+		
+			for ( var i=0; i < length; i++ ) {
+				if ( (markers[i].ticks + clearMarkersTime) > ticks || markers[i].ticks == callBackInterval ) {
+					var marker = markers.shift();
+					marker.setVisible(false);
+				}
 			}
 			
-			calculateIntervals();
-		});
-	}
-	
-	function calculateIntervals() {
-		if(coordinates.length > callBackInterval) {
-			showInterval = 1;
-			numberOfCordinatesShowAtOneTime = Math.ceil(coordinates.length / callBackInterval);
 		}
-		else {
-			numberOfCordinatesShowAtOneTime = 1;
-			coordinatesLength = (coordinates.length > 0) ? coordinates.length : 1;
-			showInterval = Math.floor(coordinatesLength);
-		}
-	}
 
-	function clearMarkers() {
-		var length = markers.length;
-		
-		for (var i=0; i < length; i++) {
-			if((markers[i].ticks + clearMarkersTime) > ticks || markers[i].ticks == callBackInterval) {
-				var marker = markers.shift();
-				marker.setVisible(false);
-			}
-		}
-	}
-
-</script>
+	</script>
 
 </body>
 
