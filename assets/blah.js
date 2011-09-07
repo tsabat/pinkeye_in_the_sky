@@ -1,7 +1,7 @@
 var http = require("http");
 var redis = require("redis"),
 
-client = redis.createClient();
+    client = redis.createClient();
 var requests = [];
 var strings = [];
 
@@ -11,14 +11,14 @@ http.createServer(
             response.writeHead(200, {'Content-Type': 'image/x-icon'});
             response.end();
             console.log('favicon requested');
+            return;
         } else {
             requests.push(response);
-			console.log(requests);
         }
 
     }).listen(8000);
 
-function foo() {
+setInterval(function() {
     var d = new Date();
     var key = "pink-eye-p-" + d.getMinutes();
     console.log('reading key into array from ' + key);
@@ -27,21 +27,20 @@ function foo() {
             for (var i = 0; i < obj.length; i++) {
                 strings.push(JSON.parse(obj[i]));
             }
+            ;
         }
+        ;
     });
-}
+}, 1000);
+
 
 setInterval(function() {
-	foo();
     while (requests.length) {
         console.log('sending requests back.');
         response = requests.shift();
         response.writeHead(200, { "Content-Type": "text/plain" });
         response.end(JSON.stringify(strings));
-		console.log(requests);
-
     }
-	console.log("Killing requests");
     strings = [];
 
 }, 5000);

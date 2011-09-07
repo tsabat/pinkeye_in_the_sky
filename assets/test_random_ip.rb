@@ -1,12 +1,32 @@
 require 'redis'
-count_per_minute = 200
+require 'ipaddr'
+require 'json'
+
+
+count_per_minute = 600
 wait_time = 60
+
+def get_ip ip
+  n = IPAddr.new(ip).to_i
+  (n - (n % 65536))
+end
+
+def coordinates redis, num
+  r = redis.get "pinkeye#{num}"
+  if !r.nil?
+    arr = r.split(",");
+    {:latitude => arr[0], :longitude => arr[1]}.to_json
+  else
+    r
+  end
+
+end
 
 begin
 
   redis = Redis.new
 
-	file = File.new("wufoo.com_access.log-20100401", "r", :encoding => 'UTF-8')
+	file = File.new("logs", "r", :encoding => 'UTF-8')
   count = 0
 
 	while (line = file.gets)
@@ -20,9 +40,16 @@ begin
         sleep wait_time
         count = 0
       else
-        out = "pink-eye-p-#{time.min}"
-        puts "writing #{matchdata[0]} to #{out}"
-	      redis.sadd(out, matchdata[0])
+        json = coordinates redis, get_ip(matchdata[0])
+        if json.nil?
+          puts 'skipping string'
+        else
+          key = "pink-eye-p-#{time.min}"
+          puts "writing #{json} \nto key: #{key}"
+          puts "count: #{count}"
+	        redis.sadd(key, json)
+        end
+
       end
     end
 
@@ -33,13 +60,12 @@ begin
     end
   end
 
-
-
 	file.close
   redis.quit
 
 rescue => err
 	puts "Exception: #{err}"
-  puts "#{line}, #{arr[0]}"
+  puts "#{line}"
 	err
 end
+

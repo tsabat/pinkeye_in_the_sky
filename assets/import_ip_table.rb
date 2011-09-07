@@ -12,7 +12,9 @@ begin
     line.gsub! /"/u, ''
     line.chomp!
 		arr = line.split(',')
-    redis.set "pinkeye#{arr[0]}", {:latitude => arr[7], :longitude => arr[8]}.to_json
+    redis.set "pinkeye#{arr[0]}", "#{arr[7]},#{arr[8]}"
+
+    #{:latitude => arr[7], :longitude => arr[8]}.to_json
     counter = counter + 1
     if (counter % 10 == 0)
       puts "#{counter} items done! #{arr[0]} inserted."
