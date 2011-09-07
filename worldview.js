@@ -4,13 +4,13 @@ $(window).load(function() {
 	// alextodo, markers and coordinates all need to be removed from map
     // and newly assigned after every new ajax request because otherwise they will grow too large
 	var markers = new Array(),
-	    coordinates = new Array(),
+	    coordinates,
 	    map,
 	    i,
 	    callBackInterval = 60,
 	    showInterval = 1,
 	    numberOfCordinatesShownAtOneTime = 1,	
-		ticks = 0, // alextodo, will have to reset the ticks after a call back
+		ticks = 0,
 		nextShowInterval = 0,
 		setupMarkersTime = 1,
 		// test with 10 seconds, real should be 180 (3 minutes?)
@@ -19,14 +19,10 @@ $(window).load(function() {
 		// alextodo clear the nextShowInterval time on call back from server
 
 	function setUpMarkers() {
-		
 		if (((ticks === 0) || (ticks === nextShowInterval)) && coordinates.length > 0) {
-			
 			for( i = 0; i < numberOfCordinatesShownAtOneTime; i++ ) {
-				
 				var coordinate = coordinates.pop(),
 				    image = "Bleep.gif?random=" + coordinate.lat() + coordinate.lng();
-			
 				// Only calling this once? 
 				// console.log("Setting a marker");
 			
@@ -36,17 +32,17 @@ $(window).load(function() {
 					optimized: false,
 					map: map
 				});
-			
+				
 				marker.ticks = ticks;
+				marker.setVisible(true);
 				markers.push(marker);
 				
 			};
 		
 			nextShowInterval += showInterval;
-		};
-	
-		ticks++;
+		}
 		
+		ticks++;
 	};
 
 	function setUpMap() {
@@ -67,13 +63,15 @@ $(window).load(function() {
 
 	function getCoordinates() {
 		$.getJSON('http://css-tricks.com/wufoo/dummydata/dummydata.json?callback=?', function(data) {
+			coordinates = new Array();
+			
 			for(var index in data.coordinates) {
                 var coordinate = data.coordinates[index];
-                
                 coordinates.push(new google.maps.LatLng(coordinate.latitude, coordinate.longitude));
             }
             
             calculateIntervals();
+			setUpMarkers();
 		});
 		
 	};
@@ -88,6 +86,12 @@ $(window).load(function() {
             coordinatesLength = (coordinates.length > 0) ? coordinates.length : 1;
             showInterval = Math.floor(callBackInterval / coordinatesLength);
         }
+		
+		// After the initial data request, jump start the nextShowInterval, skip 0
+		// as a show interval because of time lapse
+		if(nextShowInterval == 0) {
+			nextShowInterval += showInterval;
+		}
     }
     
     function clearMarkers() {
@@ -97,10 +101,21 @@ $(window).load(function() {
             }
         }
     }
+
+	function pollServer() {
+		if(ticks >= callBackInterval) {
+			markers = new Array();
+			ticks = 0;
+			nextShowInterval = 0;
+			
+			getCoordinates();
+		}
+	}
 	
 	setUpMap();
 	getCoordinates();
-		
+	
+	setInterval(pollServer, 1000);
 	setInterval(setUpMarkers, setupMarkersTime * 1000);
 	setInterval(clearMarkers, clearMarkersTime * 1000);
 	
