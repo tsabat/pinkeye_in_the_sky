@@ -36,7 +36,7 @@ setInterval(function() {
     while (requests.length) {
         console.log('sending requests back.');
         out = requests.shift();
-        out[1].writeHead(200, { "Content-Type": "text/plain" });
+        out[1].writeHead(200, { "Content-Type": "text/json" });
 		var lVars = url.parse(out[0].url, true);
 		var wrap = lVars.query.callback;
 		var s = wrap+'({"coordinates":'+JSON.stringify(strings)+'})';
