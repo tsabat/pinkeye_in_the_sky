@@ -14,7 +14,7 @@ $(window).load(function() {
 		nextShowInterval = 0,
 		setupMarkersTime = 1,
 		// test with 10 seconds, real should be 180 (3 minutes?)
-		clearMarkersTime = 10;
+		clearMarkersTime = 20;
 		// the time markers should be shown
 		// alextodo clear the nextShowInterval time on call back from server
 
@@ -22,7 +22,7 @@ $(window).load(function() {
 		if (((ticks === 0) || (ticks === nextShowInterval)) && coordinates.length > 0) {
 			for( i = 0; i < numberOfCordinatesShownAtOneTime; i++ ) {
 				var coordinate = coordinates.pop(),
-				    image = "Bleep.gif?random=" + coordinate.lat() + coordinate.lng();
+				    image = "pin.png";
 				// Only calling this once? 
 				//console.log("Setting a marker");
 			
@@ -32,6 +32,7 @@ $(window).load(function() {
 					optimized: false,
 					map: map
 				});
+				marker.setAnimation(google.maps.Animation.DROP);
 				
 				marker.ticks = ticks;
 				marker.setVisible(true);
@@ -62,8 +63,8 @@ $(window).load(function() {
 	};
 
 	function getCoordinates() {
-		$.getJSON('http://css-tricks.com/wufoo/dummydata/dummydata.json?callback=?', function(data) {
-		//$.getJSON('http://pink.eye:8000?callback=?', function(data) {
+		//$.getJSON('http://css-tricks.com/wufoo/dummydata/dummydata.json?callback=?', function(data) {
+		$.getJSON('http://pink.eye:8000?callback=?', function(data) {
 			coordinates = new Array();
 			
 			for(var index in data.coordinates) {
