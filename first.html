@@ -34,10 +34,10 @@
 	var numberOfCordinatesShowAtOneTime = 1;
 	
 	function initialize() {
+		setUpMap();
+		
 		getCoordinates();
 		
-		setUpMap();
-		calculateIntervals();
 		setInterval("setUpMarkers()", 1000);
 		setInterval("clearMarkers()", clearMarkersTime * 1000);
 	}
@@ -54,7 +54,6 @@
 	function setUpMarkers() {
 		if((ticks == 0 || ticks == nextShowInterval) && coordinates.length > 0) {
 			for (var i = 0; i < numberOfCordinatesShowAtOneTime; i++) {
-				
 				var coordinate = coordinates.pop();
 				var image = "Bleep.gif?random=" + coordinate.lat() + coordinate.lng();
 				
@@ -102,29 +101,28 @@
 				coordinates.push(new google.maps.LatLng(coordinate.latitude, coordinate.longitude));
 			}
 			
-			console.log('coordinates length: ' + coordinates.length);
+			calculateIntervals();
 		});
 	}
 	
 	function calculateIntervals() {
 		if(coordinates.length > callBackInterval) {
 			showInterval = 1;
-			numberOfCordinatesShowAtOneTime = Math.ceil(coordinates.length / coordinates.length);
+			numberOfCordinatesShowAtOneTime = Math.ceil(coordinates.length / callBackInterval);
 		}
 		else {
 			numberOfCordinatesShowAtOneTime = 1;
-			showInterval = Math.floor(callBackInterval / coordinates.length);
+			coordinatesLength = (coordinates.length > 0) ? coordinates.length : 1;
+			showInterval = Math.floor(coordinatesLength);
 		}
 	}
 
 	function clearMarkers() {
 		var length = markers.length;
-		console.log(markers);
 		
 		for (var i=0; i < length; i++) {
 			if((markers[i].ticks + clearMarkersTime) > ticks || markers[i].ticks == callBackInterval) {
 				var marker = markers.shift();
-				console.log('calling set visitble false!');
 				marker.setVisible(false);
 			}
 		}
