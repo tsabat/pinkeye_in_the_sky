@@ -18,14 +18,11 @@
 		<p>This map shows the locations of users who are submitting Wufoo forms in near-real time.</p>
 	</aside>
 	
-<script type="text/javascript"
-    src="http://maps.googleapis.com/maps/api/js?sensor=true">
-</script>
-<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.6.2/jquery.min.js"></script>
+<script src="http://maps.googleapis.com/maps/api/js?sensor=true"></script>
+<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.6.2/jquery.min.js"></script>
 
-<script type="text/javascript">
-	// var entries
-	
+<script>
+
 	var markers = new Array();
 	var coordinates = new Array();
 	var map;
@@ -94,7 +91,8 @@
 	}
 	
 	function getCoordinates() {
-		$.getJSON('spec.json', function(data) {
+		$.getJSON('dummydata.json', function(data) {
+						
 			for(var index in data.coordinates) {
 				var coordinate = data.coordinates[index];
 				
@@ -129,5 +127,7 @@
 	}
 
 </script>
+
 </body>
+
 </html>
