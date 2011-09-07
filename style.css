@@ -14,9 +14,9 @@ html, body {
 #map_canvas {
 	position: absolute;
 	top: 0;
-	left: 234px;
+	left: 0;
 	height: 100%;
-	width: 80%;
+	width: 100%;
 }
 
 aside {
