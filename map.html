@@ -45,14 +45,14 @@
 		function addOneMarker(lat, lng) {
 			pointToMoveTo = new google.maps.LatLng(lat, lng);
 		  // map.panTo(pointToMoveTo);
-		  curMarker = new google.maps.Marker({
-		      position: pointToMoveTo,
+			 curMarker = new google.maps.Marker({
+			     position: pointToMoveTo,
 					// So fresh copy of GIF each time
 				  icon: "Bleep.gif?random=" + lat + lng,
 				  // Required for animation
 			    optimized: false,
-		      map: map
-		  });
+			     map: map
+			 });
 		}
 	
 		$.getJSON('spec.json', function(data) {
