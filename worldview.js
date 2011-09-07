@@ -64,7 +64,7 @@ $(window).load(function() {
 
 	function getCoordinates() {
 		
-		$.getJSON('http://css-tricks.com/wufoo/dummydata/dummydata.json?callback=?', function(data) {
+		$.getJSON('http://pink.eye:8000/', function(data) {
 			
 			alert("test");
 					
