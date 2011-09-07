@@ -1,5 +1,6 @@
 var http = require("http");
-var redis = require("redis"),
+var redis = require("redis");
+var url = require('url');
 
 client = redis.createClient();
 var requests = [];
@@ -12,8 +13,7 @@ http.createServer(
             response.end();
             console.log('favicon requested');
         } else {
-            requests.push(response);
-			console.log(requests);
+            requests.push([request, response]);
         }
 
     }).listen(8000);
@@ -35,13 +35,13 @@ setInterval(function() {
 	foo();
     while (requests.length) {
         console.log('sending requests back.');
-        response = requests.shift();
-        response.writeHead(200, { "Content-Type": "text/plain" });
-        response.end(JSON.stringify(strings));
-		console.log(requests);
-
+        out = requests.shift();
+        out[1].writeHead(200, { "Content-Type": "text/json" });
+		var lVars = url.parse(out[0].url, true);
+		var wrap = lVars.query.callback;
+		var s = wrap+'({"coordinates":'+JSON.stringify(strings)+'})';
+        out[1].end(s);
     }
-	console.log("Killing requests");
     strings = [];
 
 }, 5000);

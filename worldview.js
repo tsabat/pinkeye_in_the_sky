@@ -24,7 +24,7 @@ $(window).load(function() {
 				var coordinate = coordinates.pop(),
 				    image = "Bleep.gif?random=" + coordinate.lat() + coordinate.lng();
 				// Only calling this once? 
-				// console.log("Setting a marker");
+				//console.log("Setting a marker");
 			
 				var marker = new google.maps.Marker({
 					position: coordinate,
@@ -63,6 +63,7 @@ $(window).load(function() {
 
 	function getCoordinates() {
 		$.getJSON('http://css-tricks.com/wufoo/dummydata/dummydata.json?callback=?', function(data) {
+		//$.getJSON('http://pink.eye:8000?callback=?', function(data) {
 			coordinates = new Array();
 			
 			for(var index in data.coordinates) {
@@ -73,7 +74,6 @@ $(window).load(function() {
             calculateIntervals();
 			setUpMarkers();
 		});
-		
 	};
 
     function calculateIntervals() {
