@@ -64,8 +64,9 @@ $(window).load(function() {
 
 	function getCoordinates() {
 		
-		/* This isn't working for http://css-tricks.com/wufoo/dummydata.json GAYYYY */
-		$.getJSON('dummydata.json', function(data) {
+		$.getJSON('http://css-tricks.com/wufoo/dummydata/dummydata.json?callback=?', function(data) {
+			
+			alert("test");
 					
 			for( var index in data.coordinates ) {
 				var coordinate = data.coordinates[index];
