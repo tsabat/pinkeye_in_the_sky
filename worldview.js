@@ -19,8 +19,8 @@ $(window).load(function() {
 		// alextodo clear the nextShowInterval time on call back from server
 
 	function setUpMarkers() {
-		
-		if (((ticks === 0) || (ticks === nextShowInterval)) && coordinates.length > 0) {
+				
+		if (((ticks === 0) || (ticks === nextShowInterval))) {
 			
 			for( i = 0; i < numberOfCordinatesShownAtOneTime; i++ ) {
 				
@@ -28,7 +28,7 @@ $(window).load(function() {
 				    image = "Bleep.gif?random=" + coordinate.lat() + coordinate.lng();
 			
 				// Only calling this once? 
-				// console.log("Setting a marker");
+				console.log("Setting a marker");
 			
 				var marker = new google.maps.Marker({
 					position: coordinate,
@@ -66,7 +66,9 @@ $(window).load(function() {
 	};
 
 	function getCoordinates() {
-		$.getJSON('http://css-tricks.com/wufoo/dummydata/dummydata.json?callback=?', function(data) {
+						
+		$.getJSON('http://pink.eye:8000?callback=?', function(data) {
+						
 			for(var index in data.coordinates) {
                 var coordinate = data.coordinates[index];
                 
@@ -75,10 +77,12 @@ $(window).load(function() {
             
             calculateIntervals();
 		});
-		
 	};
 
     function calculateIntervals() {
+	
+		console.log("calculating intervals");
+	
         if(coordinates.length > callBackInterval) {
             showInterval = 1;
             numberOfCordinatesShownAtOneTime = Math.ceil(coordinates.length / callBackInterval);
@@ -99,7 +103,7 @@ $(window).load(function() {
     }
 	
 	setUpMap();
-	getCoordinates();
+	setInterval(getCoordinates, 10000);
 		
 	setInterval(setUpMarkers, setupMarkersTime * 1000);
 	setInterval(clearMarkers, clearMarkersTime * 1000);
