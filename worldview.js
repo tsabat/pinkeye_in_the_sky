@@ -1,16 +1,20 @@
 // Just in case I guess
 $(window).load(function() {
 
+	// alextodo, markers and coordinates all need to be removed from map
+    // and newly assigned after every new ajax request because otherwise they will grow too large
 	var markers = new Array(),
 	    coordinates = new Array(),
 	    map,
 	    i,
 	    callBackInterval = 60,
 	    showInterval = 1,
-	    numberOfCordinatesShowAtOneTime = 1,	
+	    numberOfCordinatesShownAtOneTime = 1,	
 		ticks = 0, // alextodo, will have to reset the ticks after a call back
 		nextShowInterval = 0,
-		clearMarkersTime = 180;
+		setupMarkersTime = 1,
+		// test with 10 seconds, real should be 180 (3 minutes?)
+		clearMarkersTime = 10;
 		// the time markers should be shown
 		// alextodo clear the nextShowInterval time on call back from server
 
@@ -18,7 +22,7 @@ $(window).load(function() {
 		
 		if (((ticks === 0) || (ticks === nextShowInterval)) && coordinates.length > 0) {
 			
-			for( i = 0; i < numberOfCordinatesShowAtOneTime; i++ ) {
+			for( i = 0; i < numberOfCordinatesShownAtOneTime; i++ ) {
 				
 				var coordinate = coordinates.pop(),
 				    image = "Bleep.gif?random=" + coordinate.lat() + coordinate.lng();
@@ -59,55 +63,44 @@ $(window).load(function() {
 		};
 
 		map = new google.maps.Map(document.getElementById("map_canvas"), options);
-		
 	};
 
 	function getCoordinates() {
-		
-		$.getJSON('http://pink.eye:8000/', function(data) {
-			
-			alert("test");
-					
-			for( var index in data.coordinates ) {
-				var coordinate = data.coordinates[index];
-				coordinates.push(new google.maps.LatLng(coordinate.latitude, coordinate.longitude));
-			}
-			
-			calculateIntervals();
-			
+		$.getJSON('http://pink.eye:8000?callback=', function(data) {
+			for(var index in data.coordinates) {
+                var coordinate = data.coordinates[index];
+                
+                coordinates.push(new google.maps.LatLng(coordinate.latitude, coordinate.longitude));
+            }
+            
+            calculateIntervals();
 		});
-		
 	};
 
-	function calculateIntervals() {
-		
-		if ( coordinates.length > callBackInterval ) {
-			showInterval = 1;
-			numberOfCordinatesShowAtOneTime = Math.ceil(coordinates.length / callBackInterval);
-		} else {
-			numberOfCordinatesShowAtOneTime = 1;
-			coordinatesLength = (coordinates.length > 0) ? coordinates.length : 1;
-			showInterval = Math.floor(coordinatesLength);
-		}
-	};
-
-	function clearMarkers() {
-		
-		var length = markers.length;
-	
-		for (i = 0; i < length; i++) {
-			if ( (markers[i].ticks + clearMarkersTime) > ticks || markers[i].ticks == callBackInterval ) {
-				var marker = markers.shift();
-				marker.setVisible(false);
-			};
-		};
-		
-	};
+    function calculateIntervals() {
+        if(coordinates.length > callBackInterval) {
+            showInterval = 1;
+            numberOfCordinatesShownAtOneTime = Math.ceil(coordinates.length / callBackInterval);
+        }
+        else {
+            numberOfCordinatesShownAtOneTime = 1;
+            coordinatesLength = (coordinates.length > 0) ? coordinates.length : 1;
+            showInterval = Math.floor(callBackInterval / coordinatesLength);
+        }
+    }
+    
+    function clearMarkers() {
+        for ( i=0; i < markers.length; i++) {
+            if((markers[i].ticks + clearMarkersTime) < ticks || markers[i].ticks == callBackInterval) {
+                markers[i].setVisible(false);
+            }
+        }
+    }
 	
 	setUpMap();
 	getCoordinates();
 		
-	setInterval(setUpMarkers, 1000);
+	setInterval(setUpMarkers, setupMarkersTime * 1000);
 	setInterval(clearMarkers, clearMarkersTime * 1000);
 	
 });
